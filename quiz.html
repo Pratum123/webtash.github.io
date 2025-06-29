@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📚 प्रश्नोत्तरी ऐप</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: linear-gradient(135deg, #3949ab, #283593);
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .section {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      max-width: 750px;
+      margin: 30px auto;
+    }
+    textarea, input, select {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+      box-sizing: border-box;
+      transition: border 0.3s;
+    }
+    .btn {
+      background: linear-gradient(135deg, #3949ab, #5c6bc0);
+      color: white;
+      font-weight: bold;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: transform 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    .btn-option {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 12px 15px;
+      border-radius: 8px;
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      margin: 8px 0;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-option:hover {
+      background: #e9ecef;
+    }
+    .explanation {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+      color: #555;
+      line-height: 1.5;
+    }
+    .edit-btn {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: #FFC107;
+      color: #000;
+      border: none;
+      padding: 2px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 10px;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .question-item {
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+      position: relative;
+    }
+    .submit-btn {
+      background: linear-gradient(135deg, #4CAF50, #66BB6A);
+    }
+    .accuracy-display {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 32px;
+      font-weight: bold;
+      color: #3949ab;
+      text-align: center;
+    }
+    .result-card {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    .question-container {
+      position: relative;
+      padding: 15px;
+      background: #fff;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .question-text {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .statement {
+      font-weight: normal;
+      color: #555;
+      margin: 5px 0;
+      line-height: 1.4;
+    }
+    @media (max-width: 600px) {
+      .result-content {
+        flex-direction: column;
+      }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<header>📚 प्रश्नोत्तरी ऐप</header>
+<h2 id="pageTitle" style="text-align:center; color:#3949ab;"></h2>
+
+<div id="inputSection" class="section" style="display:none;">
+  <h3>➕ नया प्रश्न जोड़ें</h3>
+  <textarea id="question" placeholder="प्रश्न लिखें (बोल्ड दिखेगा)"></textarea>
+  <input id="optA" placeholder="विकल्प A">
+  <input id="optB" placeholder="विकल्प B">
+  <input id="optC" placeholder="विकल्प C">
+  <input id="optD" placeholder="विकल्प D">
+  <select id="correct">
+    <option value="A">A</option>
+    <option value="B">B</option>
+    <option value="C">C</option>
+    <option value="D">D</option>
+  </select>
+  <textarea id="explanation" placeholder="व्याख्या लिखें (सामान्य टेक्स्ट)"></textarea>
+  <button class="btn" onclick="saveQuestion()">📂 सेव करें</button>
+  <div id="questionCount"></div>
+  <div id="questionList"></div>
+</div>
+
+<div id="practiceSection" class="section" style="display:none;">
+  <h3>🎯 अभ्यास शुरू करें</h3>
+  <div id="progress"></div>
+  <div id="gotoContainer" style="margin-top:15px;">
+    <input id="gotoInput" type="number" placeholder="प्रश्न संख्या" style="width:60%; padding:8px;">
+    <button id="gotoBtn" onclick="goToQuestion()" class="btn">🔍 जाएं</button>
+  </div>
+  <div id="quizQuestionContainer" style="margin-top:15px;">
+    <div id="quizQuestion" class="question-container"></div>
+  </div>
+  <div id="quizOptions"></div>
+</div>
+
+<div id="resultSection" class="section" style="display:none;">
+  <div class="result-card">
+    <h3 style="text-align:center; color:#3949ab;">📊 आपके परिणाम</h3>
+    <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:center;">
+      <div style="flex:1; min-width:200px;">
+        <div style="background:#f9f9f9; padding:15px; border-radius:8px;">
+          <p><strong>📝 कुल प्रश्न:</strong> <span id="totalQuestions">0</span></p>
+          <p><strong>✅ सही उत्तर:</strong> <span id="correctAnswers">0</span></p>
+          <p><strong>❌ गलत उत्तर:</strong> <span id="incorrectAnswers">0</span></p>
+          <p><strong>📊 सटीकता:</strong> <span id="accuracyPercent" style="font-weight:bold; color:#3949ab;">0%</span></p>
+        </div>
+      </div>
+      <div style="position:relative; width:250px; height:250px;">
+        <canvas id="resultChart"></canvas>
+        <div class="accuracy-display">
+          <span id="bigAccuracy">0%</span>
+          <div style="font-size:14px; color:#666;">सटीकता</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn" onclick="window.location.href='index.html'" style="margin-top:25px; width:100%;">
+      🏠 मुख्य पेज पर वापस जाएं
+    </button>
+  </div>
+</div>
+
+<script>
+let questions = [];
+let currentQuestion = 0;
+let correctCount = 0;
+let incorrectCount = 0;
+let editIndex = -1;
+
+function saveQuestion() {
+  const q = document.getElementById("question").value.trim();
+  const A = document.getElementById("optA").value.trim();
+  const B = document.getElementById("optB").value.trim();
+  const C = document.getElementById("optC").value.trim();
+  const D = document.getElementById("optD").value.trim();
+  const correct = document.getElementById("correct").value;
+  const exp = document.getElementById("explanation").value.trim();
+  
+  if (!q || !A || !B || !C || !D || !correct) {
+    alert("❗ सभी फ़ील्ड भरें!");
+    return;
+  }
+  
+  const newQ = {
+    question: q,
+    options: { A, B, C, D },
+    correct,
+    explanation: exp
+  };
+  
+  if (editIndex >= 0) {
+    questions[editIndex] = newQ;
+    editIndex = -1;
+    alert("✅ प्रश्न अपडेट हो गया!");
+  } else {
+    questions.push(newQ);
+    alert("✅ नया प्रश्न जोड़ा गया!");
+  }
+  
+  const currentKey = `quiz_${localStorage.getItem("selectedMain")}_${localStorage.getItem("selectedSub")}`;
+  localStorage.setItem(currentKey, JSON.stringify(questions));
+  
+  document.getElementById("question").value = '';
+  document.getElementById("optA").value = '';
+  document.getElementById("optB").value = '';
+  document.getElementById("optC").value = '';
+  document.getElementById("optD").value = '';
+  document.getElementById("explanation").value = '';
+  document.getElementById("correct").value = 'A';
+  
+  document.getElementById("questionCount").textContent = `🔢 कुल प्रश्न: ${questions.length}`;
+  showAllQuestions();
+}
+
+function showAllQuestions() {
+  const listDiv = document.getElementById("questionList");
+  listDiv.innerHTML = '';
+  
+  questions.forEach((q, index) => {
+    const div = document.createElement("div");
+    div.className = "question-item";
+    div.innerHTML = `
+      <div style="position:relative;">
+        <button class="edit-btn" onclick="editQuestion(${index})">✏️</button>
+        <div class="question-text">Q${index + 1}: ${formatQuestionText(q.question)}</div>
+      </div>
+    `;
+    listDiv.appendChild(div);
+  });
+}
+
+function formatQuestionText(text) {
+  // स्टेटमेंट्स को अलग करने के लिए (जो बोल्ड नहीं होंगे)
+  const parts = text.split('\n');
+  let result = `<strong>${parts[0]}</strong>`; // पहली लाइन हमेशा बोल्ड
+  
+  if (parts.length > 1) {
+    for (let i = 1; i < parts.length; i++) {
+      if (parts[i].trim() !== '') {
+        result += `<div class="statement">${parts[i]}</div>`;
+      }
+    }
+  }
+  
+  return result;
+}
+
+function editQuestion(index) {
+  const q = questions[index];
+  document.getElementById("question").value = q.question;
+  document.getElementById("optA").value = q.options.A;
+  document.getElementById("optB").value = q.options.B;
+  document.getElementById("optC").value = q.options.C;
+  document.getElementById("optD").value = q.options.D;
+  document.getElementById("correct").value = q.correct;
+  document.getElementById("explanation").value = q.explanation;
+  editIndex = index;
+  
+  document.getElementById("inputSection").style.display = "block";
+  document.getElementById("practiceSection").style.display = "none";
+  document.getElementById("pageTitle").textContent = "✏️ प्रश्न संपादित करें";
+}
+
+function editCurrentQuestion() {
+  const q = questions[currentQuestion];
+  
+  document.getElementById("inputSection").style.display = "block";
+  document.getElementById("practiceSection").style.display = "none";
+  
+  document.getElementById("question").value = q.question;
+  document.getElementById("optA").value = q.options.A;
+  document.getElementById("optB").value = q.options.B;
+  document.getElementById("optC").value = q.options.C;
+  document.getElementById("optD").value = q.options.D;
+  document.getElementById("correct").value = q.correct;
+  document.getElementById("explanation").value = q.explanation;
+  
+  editIndex = currentQuestion;
+  document.getElementById("pageTitle").textContent = "✏️ प्रश्न संपादित करें";
+}
+
+function goToQuestion() {
+  const input = parseInt(document.getElementById("gotoInput").value);
+  if (!input || input < 1 || input > questions.length) {
+    alert(`⚠️ मान्य प्रश्न संख्या दर्ज करें (1 से ${questions.length} के बीच)`);
+    return;
+  }
+  currentQuestion = input - 1;
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = questions[currentQuestion];
+  
+  const quizQuestionHTML = `
+    <div id="quizQuestion" class="question-container">
+      <button class="edit-btn" onclick="editCurrentQuestion()">✏️</button>
+      <div class="question-text">📘 प्रश्न ${currentQuestion + 1}/${questions.length}: ${formatQuestionText(q.question)}</div>
+    </div>
+  `;
+  
+  document.getElementById("quizQuestionContainer").innerHTML = quizQuestionHTML;
+  
+  const optionsDiv = document.getElementById("quizOptions");
+  optionsDiv.innerHTML = '';
+  
+  for (let key in q.options) {
+    const btn = document.createElement("button");
+    btn.className = "btn-option";
+    btn.textContent = `${key}: ${q.options[key]}`;
+    btn.onclick = () => handleAnswer(key);
+    optionsDiv.appendChild(btn);
+  }
+  
+  const submitBtn = document.createElement("button");
+  submitBtn.textContent = "✅ क्विज सबमिट करें";
+  submitBtn.className = "btn submit-btn";
+  submitBtn.onclick = () => {
+    if (confirm(`क्या आप वाकई क्विज सबमिट करना चाहते हैं?\nआपने ${correctCount + incorrectCount} प्रश्नों के उत्तर दिए हैं।`)) {
+      submitQuiz();
+    }
+  };
+  optionsDiv.appendChild(submitBtn);
+  
+  document.getElementById("progress").textContent = `📘 ${currentQuestion + 1} / ${questions.length}`;
+}
+
+function handleAnswer(selected) {
+  const q = questions[currentQuestion];
+  const optionsDiv = document.getElementById("quizOptions");
+  
+  document.querySelectorAll(".btn-option").forEach(btn => btn.disabled = true);
+  
+  for (let btn of optionsDiv.children) {
+    const key = btn.textContent[0];
+    if (key === q.correct) {
+      btn.style.backgroundColor = "#4CAF50";
+      btn.style.color = "white";
+    } else if (key === selected) {
+      btn.style.backgroundColor = "#F44336";
+      btn.style.color = "white";
+    }
+  }
+  
+  const expl = document.createElement("div");
+  expl.className = "explanation";
+  expl.innerHTML = `<strong>📘 व्याख्या:</strong><br>${(q.explanation || 'कोई व्याख्या नहीं दी गई है').replace(/\n/g, "<br>")}`;
+  optionsDiv.appendChild(expl);
+  
+  if (selected === q.correct) {
+    correctCount++;
+  } else {
+    incorrectCount++;
+  }
+  
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = currentQuestion < questions.length - 1 ? "➡️ अगला प्रश्न" : "✅ क्विज सबमिट करें";
+  nextBtn.className = "btn";
+  nextBtn.style.marginTop = "20px";
+  nextBtn.onclick = () => {
+    currentQuestion++;
+    if (currentQuestion >= questions.length) submitQuiz();
+    else showQuestion();
+  };
+  optionsDiv.appendChild(nextBtn);
+}
+
+function submitQuiz() {
+  const totalAnswered = correctCount + incorrectCount;
+  const totalQuestions = questions.length;
+  const accuracyPercent = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
+  
+  document.getElementById("totalQuestions").textContent = totalQuestions;
+  document.getElementById("correctAnswers").textContent = correctCount;
+  document.getElementById("incorrectAnswers").textContent = incorrectCount;
+  document.getElementById("accuracyPercent").textContent = `${accuracyPercent}%`;
+  document.getElementById("bigAccuracy").textContent = `${accuracyPercent}%`;
+  
+  const ctx = document.getElementById('resultChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['सही उत्तर', 'गलत उत्तर'],
+      datasets: [{
+        data: [correctCount, incorrectCount],
+        backgroundColor: ['#4CAF50', '#F44336'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      cutout: '65%',
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+  
+  document.getElementById("practiceSection").style.display = "none";
+  document.getElementById("resultSection").style.display = "block";
+}
+
+function populateQuiz() {
+  const main = localStorage.getItem("selectedMain");
+  const sub = localStorage.getItem("selectedSub");
+  const mode = localStorage.getItem("quizMode") || "practice";
+  const currentKey = `quiz_${main}_${sub}`;
+  
+  questions = JSON.parse(localStorage.getItem(currentKey) || '[]');
+  currentQuestion = 0;
+  correctCount = 0;
+  incorrectCount = 0;
+  editIndex = -1;
+  
+  document.getElementById("pageTitle").textContent = mode === "input" ? "➕ प्रश्न जोड़ें" : "🎯 अभ्यास";
+  
+  if (mode === "input") {
+    document.getElementById("inputSection").style.display = "block";
+    document.getElementById("questionCount").textContent = `🔢 कुल प्रश्न: ${questions.length}`;
+    showAllQuestions();
+  } else {
+    if (questions.length === 0) {
+      alert("❗ कोई प्रश्न नहीं मिला!");
+      window.location.href = "index.html";
+    } else {
+      document.getElementById("practiceSection").style.display = "block";
+      showQuestion();
+    }
+  }
+}
+
+window.onload = populateQuiz;
+</script>
+</body>
+</html>

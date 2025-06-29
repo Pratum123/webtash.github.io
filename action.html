@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <title>📋 क्रिया चयन</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6fb;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #3949ab;
+    }
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      margin: 20px auto;
+      max-width: 600px;
+    }
+    .btn {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
+      font-weight: bold;
+      background-color: #3949ab;
+      color: white;
+      cursor: pointer;
+    }
+    .info {
+      margin-bottom: 20px;
+      font-size: 18px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<header style="background:#3949ab; color:white; padding:20px; font-size:24px; text-align:center;">
+  📘 Quiz App
+</header>
+
+  <h1>📋 कार्य चुनें</h1>
+
+  <div class="section">
+    <div class="info">
+      <strong>मुख्य विषय:</strong> <span id="showMain"></span><br>
+      <strong>उपविषय:</strong> <span id="showSub"></span>
+    </div>
+
+    <button class="btn" onclick="goToQuiz('input')">➕ प्रश्न जोड़ें</button>
+    <button class="btn" onclick="goToQuiz('practice')">🎯 अभ्यास करें</button>
+  </div>
+
+<script>
+  const main = localStorage.getItem("selectedMain");
+  const sub = localStorage.getItem("selectedSub");
+
+  if (!main || !sub) {
+    alert("⚠️ विषय और उपविषय चयन आवश्यक है!");
+    window.location.href = "index.html";
+  }
+
+  document.getElementById("showMain").textContent = main[0].toUpperCase() + main.slice(1);
+  document.getElementById("showSub").textContent = sub;
+
+  function goToQuiz(mode) {
+    localStorage.setItem("quizMode", mode);  // 'input' या 'practice'
+    window.location.href = "quiz.html";
+  }
+</script>
+
+</body>
+</html>
